@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#020805">
+<title>TALHA BADAKHSHI | MATRIX</title>
+<style>
+  :root { color-scheme: dark; --green:#39ff88; --dim:#0e8f4d; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; min-height:100%; background:#020805; color:var(--green); font-family:Consolas,Monaco,"Courier New",monospace; }
+  body { overflow-x:hidden; }
+  canvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; opacity:.65; }
+  .scanlines { position:fixed; inset:0; z-index:1; pointer-events:none; background:repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,.18) 4px 5px); }
+  main { position:relative; z-index:2; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px; }
+  .panel { width:min(720px,100%); padding:clamp(22px,5vw,46px); border:1px solid rgba(57,255,136,.75); background:rgba(0,12,5,.83); box-shadow:0 0 24px rgba(57,255,136,.16), inset 0 0 30px rgba(57,255,136,.04); }
+  .topline { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; color:#9affbd; font-size:12px; letter-spacing:.14em; }
+  .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 10px var(--green); margin-right:7px; }
+  h1 { font-size:clamp(30px,7vw,58px); line-height:1.05; text-align:center; margin:36px 0 10px; letter-spacing:.08em; text-shadow:0 0 12px rgba(57,255,136,.65); overflow-wrap:anywhere; }
+  .subtitle { text-align:center; color:#b8ffd0; font-size:clamp(12px,2.8vw,16px); margin-bottom:30px; }
+  .rule { border:0; border-top:1px solid rgba(57,255,136,.35); margin:24px 0; }
+  .terminal { min-height:155px; line-height:1.9; font-size:clamp(12px,3vw,15px); overflow-wrap:anywhere; }
+  .prompt { color:#d1ffe0; }
+  .ok { color:#39ff88; }
+  .muted { color:#7bd99e; }
+  .cursor { display:inline-block; width:8px; height:1em; background:var(--green); vertical-align:middle; animation:blink .8s steps(2,start) infinite; }
+  .buttons { display:flex; justify-content:center; flex-wrap:wrap; gap:12px; margin-top:24px; }
+  button { border:1px solid var(--green); color:var(--green); background:transparent; padding:12px 18px; font:inherit; cursor:pointer; }
+  button:hover, button:focus-visible { color:#001b0b; background:var(--green); outline:none; }
+  footer { margin-top:28px; text-align:center; color:#70bd8d; font-size:11px; letter-spacing:.08em; }
+  @keyframes blink { to { visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; } }
+</style>
+</head>
+<body>
+<canvas id="matrix" aria-hidden="true"></canvas>
+<div class="scanlines" aria-hidden="true"></div>
+<main>
+  <section class="panel" aria-label="Matrix personal profile">
+    <div class="topline"><span><i class="dot"></i>SYSTEM ONLINE</span><span>SECURE TERMINAL // DEMO</span></div>
+    <h1>TALHA<br>BADAKHSHI</h1>
+    <div class="subtitle">WELCOME TO MY MATRIX</div>
+    <hr class="rule">
+    <div class="terminal" aria-live="polite">
+      <div><span class="prompt">&gt;</span> Initializing interface...</div>
+      <div><span class="prompt">&gt;</span> User: <span class="ok">TALHA BADAKHSHI</span></div>
+      <div><span class="prompt">&gt;</span> Status: <span class="ok">ONLINE</span></div>
+      <div><span class="prompt">&gt;</span> Access: <span class="muted">GRANTED (DEMO)</span></div>
+      <div><span class="prompt">&gt;</span> This is a personal Matrix-style page.<span class="cursor"></span></div>
+    </div>
+    <hr class="rule">
+    <div class="buttons">
+      <button id="replay" type="button">REPLAY INTRO</button>
+      <button id="toggle" type="button">PAUSE MATRIX</button>
+    </div>
+    <footer>FICTIONAL HACKER AESTHETIC • NO SYSTEM ACCESS OR HACKING</footer>
+  </section>
+</main>
+<script>
+(() => {
+  const canvas = document.getElementById('matrix');
+  const ctx = canvas.getContext('2d');
+  let width, height, columns, drops, fontSize = 16, running = true, frame;
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノ012345789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    width = window.innerWidth; height = window.innerHeight;
+    canvas.width = Math.floor(width * dpr); canvas.height = Math.floor(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    columns = Math.ceil(width / fontSize);
+    drops = Array.from({length: columns}, () => Math.random() * (height / fontSize));
+    ctx.font = fontSize + 'px monospace';
+  }
+  function draw() {
+    if (!running) return;
+    ctx.fillStyle = 'rgba(2, 8, 5, 0.09)';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#39ff88';
+    for (let i = 0; i < drops.length; i++) {
+      const char = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(char, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > height && Math.random() > 0.975) drops[i] = 0;
+      drops[i] += 0.65 + Math.random() * 0.6;
+    }
+    frame = requestAnimationFrame(draw);
+  }
+  function start() { if (!running) running = true; cancelAnimationFrame(frame); draw(); }
+  function stop() { running = false; cancelAnimationFrame(frame); }
+  resize(); draw();
+  window.addEventListener('resize', resize);
+  document.getElementById('toggle').addEventListener('click', (e) => {
+    if (running) { stop(); e.currentTarget.textContent = 'RESUME MATRIX'; }
+    else { start(); e.currentTarget.textContent = 'PAUSE MATRIX'; }
+  });
+  document.getElementById('replay').addEventListener('click', () => {
+    const terminal = document.querySelector('.terminal');
+    terminal.style.opacity = '0';
+    setTimeout(() => { terminal.style.transition = 'opacity .4s'; terminal.style.opacity = '1'; }, 100);
+  });
+})();
+</script>
+</body>
+</html>
